@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+var program = require('commander');
+
+var lib = require('../');
+
+require('pkginfo')(module);
+
+program
+  .version(module.exports.version)
+  .option('-n, --number <num>', 'Number of instances')
+  .option('-e, --endpoint <endpoint>', 'etcd endpoint')
+  .option('-s, --sidekick', 'Start sidekick')
+  .arguments('<unit> <etcdKey>')
+  .action(function(unit, etcdKey, options) {
+    var number = parseInt(options.number || 1);
+    var endpoint = options.endpoint || '';
+    var sidekick = options.sidekick;
+    console.log(options.endpoint);
+    lib.deploy(unit, etcdKey, number, sidekick, endpoint);
+});
+
+program.parse(process.argv);

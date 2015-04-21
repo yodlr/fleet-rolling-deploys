@@ -1,0 +1,29 @@
+{
+  "name": "fleet-rolling-deploys",
+  "version": "1.0.0",
+  "description": "Do rolling deploys of services in a CoreOS cluster",
+  "main": "index.js",
+  "bin": {
+    "fleet-deploy": "bin/fleet-deploy"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yodlr/fleet-rolling-deploys.git"
+  },
+  "author": "Ross Kukulinski <ross@getyodlr.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yodlr/fleet-rolling-deploys/issues"
+  },
+  "homepage": "https://github.com/yodlr/fleet-rolling-deploys",
+  "dependencies": {
+    "async": "^0.9.0",
+    "commander": "^2.8.0",
+    "fleetctl": "git+https://git@github.com/yodlr/node-fleetctl.git",
+    "lodash": "^3.7.0",
+    "pkginfo": "^0.3.0"
+  }
+}
