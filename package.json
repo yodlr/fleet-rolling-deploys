@@ -24,6 +24,7 @@
     "commander": "^2.8.0",
     "fleetctl": "git+https://git@github.com/yodlr/node-fleetctl.git",
     "lodash": "^3.7.0",
+    "node-etcd": "^4.0.2",
     "pkginfo": "^0.3.0"
   }
 }

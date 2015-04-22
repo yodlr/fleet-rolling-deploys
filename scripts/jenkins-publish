@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+service=fleet-rolling-deploys
+branch=$(echo $GIT_BRANCH | cut -d/ -f 2)
+commit=$(git rev-parse --short HEAD)
+docker tag -f $service:$branch hub.getyodlr.com/$service
+docker tag -f $service:$branch hub.getyodlr.com/$service:jenkins_$BUILD_NUMBER
+docker tag -f $service:$branch hub.getyodlr.com/$service:$commit
+docker push hub.getyodlr.com/$service

@@ -1,11 +1,13 @@
 var Fleetctl = require('fleetctl');
-var fleetctl;
+var Etcd = require('node-etcd');
+var fleetctl, etcd;
 var async = require('async');
 var _ = require('lodash');
 
 var api = module.exports = {};
 
 var ACTIVE_TIMEOUT = 300000; // 5 minutes
+var WAIT_TO_DESTROY = 20000; // 10 seconds
 
 api.deploy = function(unit, etcdKey, count, sidekick, endpoint) {
 
@@ -13,7 +15,12 @@ api.deploy = function(unit, etcdKey, count, sidekick, endpoint) {
     binary: process.env.FLEET_BINARY || '/usr/bin/fleetctl',
     endpoint: process.env.FLEET_ENDPOINT || endpoint || 'http://172.17.42.1:4001'
   }
+  console.log('fleetctl options', opts);
   fleetctl = new Fleetctl(opts);
+  etcd = new Etcd(
+    process.env.ETCD_HOST || '172.17.42.1',
+    process.env.ETCD_PORT || 4001
+  );
 
   if (sidekick) {
     sidekick = unit + '-sk';
@@ -25,6 +32,13 @@ api.deploy = function(unit, etcdKey, count, sidekick, endpoint) {
     },
     function(callback) {
       return waitForActive(unit, count, callback);
+    },
+    function(callback) {
+      return waitForEtcd(unit, etcdKey, count, callback);
+    },
+    function(callback) {
+      console.log('Waiting for ', WAIT_TO_DESTROY, ' ms before destroying');
+      setTimeout(callback, WAIT_TO_DESTROY);
     },
     function(callback) {
       return getUnitsToDestroy(unit, callback);
@@ -127,13 +141,68 @@ function waitForActive(unit, count, callback) {
   );
 }
 
+function waitForEtcd(unit, etcdKey, count, callback) {
+  var keys = getEtcdKeys(unit, etcdKey, count);
+  var allActive = false;
+  var startTime = new Date().getTime();
+  console.log('etcd keys to check:', keys);
+  async.doWhilst(
+    function getStatus(callback) {
+      setTimeout(function() {
+        async.each(keys, function(key, callback) {
+          console.log('checking: ', key);
+          etcd.get(key, function(err, data) {
+            if (err) {
+              console.log('data not ready for ', key);
+              return callback(err);
+            }
+            console.log('data exists for ', key);
+            return callback();
+          });
+        }, function(err) {
+          if (err) {
+            return callback();
+          }
+          allActive = true;
+          return callback();
+        });
+      }, 1000);
+    },
+    function checkStatus() {
+      var now = new Date().getTime();
+      if (now - startTime > ACTIVE_TIMEOUT) {
+        return false;
+      }
+      return !allActive;
+    },
+    function() {
+      if (!allActive) {
+        return callback(new Error('Failed to start all units'));
+      }
+      else {
+        console.log('All services have been started');
+        return callback();
+      }
+    }
+  );
+}
+
+function getEtcdKeys(unit, etcdKey, count) {
+  var units = _.chain(_.range(1, count+1))
+    .map(function(iter) {
+      return etcdKey + unit + '-' + iter;
+    })
+    .value();
+  return units;
+}
+
 function getUnits(unit, count, sidekick) {
-  var units = _.chain(_.range(0, count))
+  var units = _.chain(_.range(1, count+1))
     .map(function(iter) {
       return unit + '@' + iter;
     })
     .value();
-  var sidekicks = _.chain(_.range(0, count))
+  var sidekicks = _.chain(_.range(1, count+1))
     .map(function(iter) {
       return unit + '-sk@' + iter;
     })
