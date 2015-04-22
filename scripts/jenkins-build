@@ -1,7 +1,0 @@
-#!/bin/bash
-set -e
-service=fleet-rolling-deploys
-branch=$(echo $GIT_BRANCH | cut -d/ -f 2)
-docker build --pull -t $service:$branch .
-exit_code=$?
-exit $exit_code
