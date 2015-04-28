@@ -6,7 +6,7 @@ var _ = require('lodash');
 
 var api = module.exports = {};
 
-var ACTIVE_TIMEOUT = 300000; // 5 minutes
+var ACTIVE_TIMEOUT = 600000; // 10 minutes
 var WAIT_TO_DESTROY = 120000; // 120 seconds (2 minutes)
 
 api.deploy = function(unit, etcdKey, count, sidekick, endpoint) {
