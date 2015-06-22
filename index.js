@@ -9,13 +9,14 @@ var api = module.exports = {};
 var ACTIVE_TIMEOUT = 1200000; // 20 minutes
 var WAIT_TO_DESTROY = 120000; // 120 seconds (2 minutes)
 
-api.deploy = function(unit, etcdKey, count, sidekick, endpoint) {
+api.deploy = function(unit, etcdKey, count, sidekick, endpoint, noEtcd) {
 
   var opts = {
     binary: process.env.FLEET_BINARY || '/usr/bin/fleetctl',
     endpoint: process.env.FLEET_ENDPOINT || endpoint || 'http://172.17.42.1:4001'
   }
   console.log('fleetctl options', opts);
+  console.log('noEtcd:', noEtcd);
   fleetctl = new Fleetctl(opts);
   etcd = new Etcd(
     process.env.ETCD_HOST || '172.17.42.1',
@@ -34,6 +35,10 @@ api.deploy = function(unit, etcdKey, count, sidekick, endpoint) {
       return waitForActive(unit, count, callback);
     },
     function(callback) {
+      if (noEtcd) {
+        console.log('not waiting for etcd');
+        return callback();
+      }
       return waitForEtcd(unit, etcdKey, count, callback);
     },
     function(callback) {

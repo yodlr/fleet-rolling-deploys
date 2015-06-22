@@ -10,13 +10,15 @@ program
   .option('-n, --number <num>', 'Number of instances')
   .option('-e, --endpoint <endpoint>', 'etcd endpoint')
   .option('-s, --sidekick', 'Start sidekick')
+  .option('-N, --noetcd', 'Do not wait for etcd')
   .arguments('<unit> <etcdKey>')
   .action(function(unit, etcdKey, options) {
     var number = parseInt(options.number || 1);
     var endpoint = options.endpoint || '';
     var sidekick = options.sidekick;
+    var etcdWait = options.noetcd || false;
     console.log(options.endpoint);
-    lib.deploy(unit, etcdKey, number, sidekick, endpoint);
+    lib.deploy(unit, etcdKey, number, sidekick, endpoint, etcdWait);
 });
 
 program.parse(process.argv);
