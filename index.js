@@ -106,7 +106,8 @@ function waitForActive(unit, count, callback) {
         var countActive = 0;
         fleetctl.list_units(function(err, fltUnits) {
           if (err) {
-            return callback(err);
+            console.log(err);
+            return callback();
           }
           units.forEach(function(unit) {
             var item = _.find(fltUnits, function(u) {
