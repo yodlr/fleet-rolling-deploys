@@ -116,8 +116,11 @@ function waitForActive(unit, count, callback) {
             if (item && item.active === 'active' && item.sub === 'running') {
               countActive++;
             }
-            else {
+            else if (item) {
               console.log('Service not active', item.unit, item.active, item.sub);
+            }
+            else {
+              console.log('Service not found?', item, unit, fltUnits);
             }
           });
           console.log(countActive, 'services are active of expected ', count);
